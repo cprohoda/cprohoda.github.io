@@ -5,8 +5,25 @@ Bevy as a whole is extremely flexible, where all (or nearly so) aspects of bevy 
 
 This won't be a comprehensive discussion of bevy rendering, but it will instead be a deeper look at some of the specifics of how bevy rendering interacts with wgpu, particularly in terms of GPU resources like buffers and shaders.
 
-### Uniform Buffers
+
+### WGPU + Bevy
+Bevy is built on top of a rust library called wgpu, which implements cross-platform rendering allowing a single api to render to WebGPU, Vulkan, Metal, etc. It may lose a very small amount of potential for performance optimizations, but it's not possible to hit that anyway without a team large enough to do the sort of custom rendering that bevy allows anyway by (for example) swapping out the rendering plugin.
+
+By relying on wgpu, bevy can seamlessly support rendering to a huge range of platforms and uses a rendering api very similar to wgpu at the bottom level. Bevy provides higher level apis for rendering, but I'll cover that later. This section will focus on some of the important building blocks of both wgpu and bevy (and a lot of graphics programming in general). Wgpu is conceptually and stylistically similar in API to WebGPU, so you can often directly translate WebGPU experience. Standard rust docs are available for wgpu, and an excellent tutorial is available [here](https://sotrh.github.io/learn-wgpu/).
+
+#### Vertex Buffers
+
+
+#### Instance Buffers
+Instancing is a graphics utility to create multiple copies of a single mesh, each with their own properties. It is computationally much cheaper than rendering completely different meshes. For a more comprehensive discussion of instancing in wgpu, check out the [Learn Wgpu tutorial on instancing](https://sotrh.github.io/learn-wgpu/beginner/tutorial7-instancing/).
+
+
+#### Uniform Buffers
 Uniform buffers are continuous groups of data on the GPU (buffers) that are availble to all instances of the shader (uniformly accesible). Uniforms have multiple methods of creation in bevy. I'll roughly go in order from simple to hard.
+
+
+### Bevy Rendering APIs
+In addition to the rendering features inherited from wgpu, bevy implements a number of low, medium, and high level rendering APIs that can be used to fully control bevy rendering behavior without diving all the way to WGPU.
 
 #### AsBindGroup
 ``` rust
@@ -23,10 +40,10 @@ Specialization is a set of traits and plugins provided by bevy which allow you t
 
 Pipeline specialization is a more complex and involved method of altering bevy rendering behavior, but it is a useful middle ground between small changes possible above and a full customization of the rendering pipeline using WGPU directly.
 
-### Instancing
-Instancing is a graphics utility to create multiple copies of a single mesh, each with their own properties. It is computationally much cheaper than rendering completely different meshes. For a more comprehensive discussion of instancing in wgpu, check out the [Learn Wgpu tutorial on instancing](https://sotrh.github.io/learn-wgpu/beginner/tutorial7-instancing/).
+### Instancing in Bevy
+Bevy supports and uses instancing in multiple ways beyond the general instancing behavior. The easiest to use is automatic instancing which occurs when using the same mesh and material handle. All entities which share mesh and material handles are then rendered as instances in a single batch, even if they're distinct in terms of game logic. You won't get this benefit if you load from source each time you spawn an entity, so you should store and reuse handles as a general rule. 
 
-Bevy supports and uses instancing in multiple ways. The easiest to use is automatic instancing which occurs when using the same mesh handle. If writing a shader which is intended to interact with those instances, you can use a component called a mesh tag to encode instance information. That can be retrieved with the `get_tag` function from `bevy_pbr`, like below.
+If writing a shader which is intended to interact with instances, you can use a component called a mesh tag to encode instance information. That can be retrieved with the `get_tag` function from `bevy_pbr`, like below. This function can be used to interact with other components of that entity if you need, as long as those are copied to the render world (and GPU). You'll probably need to implement the ExtractComponent trait and ExtractComponentPlugin the component to specify how to copy to the render world.
 
 ``` wgsl
 #import bevy_pbr::mesh_functions
