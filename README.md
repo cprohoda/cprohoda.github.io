@@ -17,7 +17,19 @@ Useful resources:
 - Summary article of [bevy rendering](https://hackmd.io/@bevy/rendering_summary). Deep and mostly up to date
 - Bevy [cheatbook](https://bevy-cheatbook.github.io/gpu/intro.html). Covers huge swaths of bevy. The rendering discussion of it is a pretty nice intro and has some useful graphics. It's generally out of date, but a lot of it still applies.
 
+#### Buffers
+Buffers are contiguous blocks of data allocated on the GPU. There are several different types of buffers useful for different purposes, with some very specific and some more general. Buffers need to be allocated, and given a buffer layout, usage, and a shader stage visibility.
+
+Buffer allocation is directly handled by running any of the methods like `create_buffer_init(...)` on the device, but indirectly it's often taken care of in the background by bevy's rendering plugins. Notably when coming from rust, they do not need to be initialized on allocation. You're likely to get garbage data if you read from a buffer before initialization, but `TODO` need to check whether there are security risks or anything similar. You can initialize the buffer on creation by using `create_buffer_init(...)` or by setting `zero_initialize_workgroup_memory: true` on the pipeline. You should generally initialize buffers on creation, but if you have some complex initialization logic, you can initialize manually by creating a separate pipeline stage. `TODO` add some detail and examples here.
+
+A buffer layout describes the data and especially size of the values inside the buffer. That allows the GPU to treat the buffer as a vector and select specific values by location for O(1) access.
+
+A buffer usage describes how the buffer will be read and written. Generally, the motivation is that the GPU can more heavily optimize buffer performance if it knows how it'll be used. Specifically the type of buffer, whether it'll read-only or read-write, and similar questions are handled by the buffer usage. Buffer usages can be combined arbitrarily, but the more you overload a specific buffer, the worse its performance will tend to be. Buffer usage options in wgpu match the usage flags defined in the [wgpu spec](https://gpuweb.github.io/gpuweb/#typedefdef-gpubufferusageflags).
+
+Shader stage visibility is which stage that the buffers will be available to: any combination of vertex, fragment, and compute.
+
 #### Vertex Buffers
+Vertex buffers contain data on each vertex in a mesh. Generally that includes position (`TODO` double check default vertex buffer values), but can include anything. Vertex buffers are provided to invocations of the vertex shader, with each element of the vertex buffer (typically) concerning a single vertex in a mesh and handled in a single vertex shader invocation.
 
 
 #### Instance Buffers
