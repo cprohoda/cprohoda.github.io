@@ -35,12 +35,17 @@ In addition to the rendering features inherited from wgpu, bevy implements a num
 ```
 `AsBindGroup` is a derive macro provided by Bevy which creates all the associated resources (inits the buffer on the GPU, creates the render world resource, and creates the app world resource), and then binds it to the specified bind group number.
 
-### Specialized Pipelines (mesh/compute)
+#### ExtractComponentPlugin and ExtractUniformPlugin
+The two extract plugins (TODO double check if there are others) tell bevy to copy data from the main world to the render world as part of the existing rendering process. This allows that data to be used in the GPU for various resources, with most examples I've seen of the ExtractComponentPlugin for adding data to a vertex buffer (often for instancing or pipeline specialization) and the ExtractUniformPlugin for adding data to a uniform buffer.
+ 
+A useful implementation of the ExtractUniformPlugin in the bevy code is in the [implementation of contrast adaptive sharpening](https://docs.rs/bevy_core_pipeline/0.16.1/src/bevy_core_pipeline/contrast_adaptive_sharpening/mod.rs.html#116) in the bevy core pipeline.
+
+#### Specialized Pipelines (mesh/compute)
 Specialization is a set of traits and plugins provided by bevy which allow you to modify the existing pipelines. A common way to use a specialization is to alter an existing mesh pipeline to change the data to a vector buffer. For example, in the [bevy mesh specialization example](https://github.com/bevyengine/bevy/blob/latest/examples/shader/specialized_mesh_pipeline.rs#L209), you can see how the SpecializedMeshPipeline trait allows full customization of the RenderPipelineDescriptor. That allows you to change the data in the vertex buffers, add new buffers, or use custom logic to define state-dependent rendering.
 
 Pipeline specialization is a more complex and involved method of altering bevy rendering behavior, but it is a useful middle ground between small changes possible above and a full customization of the rendering pipeline using WGPU directly.
 
-### Instancing in Bevy
+#### Instancing in Bevy
 Bevy supports and uses instancing in multiple ways beyond the general instancing behavior. The easiest to use is automatic instancing which occurs when using the same mesh and material handle. All entities which share mesh and material handles are then rendered as instances in a single batch, even if they're distinct in terms of game logic. You won't get this benefit if you load from source each time you spawn an entity, so you should store and reuse handles as a general rule. 
 
 If writing a shader which is intended to interact with instances, you can use a component called a mesh tag to encode instance information. That can be retrieved with the `get_tag` function from `bevy_pbr`, like below. This function can be used to interact with other components of that entity if you need, as long as those are copied to the render world (and GPU). You'll probably need to implement the ExtractComponent trait and ExtractComponentPlugin the component to specify how to copy to the render world.
