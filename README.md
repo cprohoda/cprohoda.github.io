@@ -9,7 +9,13 @@ This won't be a comprehensive discussion of bevy rendering, but it will instead 
 ### WGPU + Bevy
 Bevy is built on top of a rust library called wgpu, which implements cross-platform rendering allowing a single api to render to WebGPU, Vulkan, Metal, etc. It may lose a very small amount of potential for performance optimizations, but it's not possible to hit that anyway without a team large enough to do the sort of custom rendering that bevy allows anyway by (for example) swapping out the rendering plugin.
 
-By relying on wgpu, bevy can seamlessly support rendering to a huge range of platforms and uses a rendering api very similar to wgpu at the bottom level. Bevy provides higher level apis for rendering, but I'll cover that later. This section will focus on some of the important building blocks of both wgpu and bevy (and a lot of graphics programming in general). Wgpu is conceptually and stylistically similar in API to WebGPU, so you can often directly translate WebGPU experience. Standard rust docs are available for wgpu, and an excellent tutorial is available [here](https://sotrh.github.io/learn-wgpu/).
+By relying on wgpu, bevy can seamlessly support rendering to a huge range of platforms and uses a rendering api very similar to wgpu at the bottom level. Bevy provides higher level apis for rendering, but I'll cover that later. This section will focus on some of the important building blocks of both wgpu and bevy (and a lot of graphics programming in general). Wgpu is conceptually and stylistically similar in API to WebGPU, so you can often directly translate WebGPU experience.
+
+Useful resources:
+- Standard rust docs are available for [wgpu](https://docs.rs/wgpu/latest/wgpu/) and [bevy](https://docs.rs/bevy/latest/bevy/)
+- Excellent wgpu [tutorial](https://sotrh.github.io/learn-wgpu/)
+- Summary article of [bevy rendering](https://hackmd.io/@bevy/rendering_summary). Deep and mostly up to date
+- Bevy [cheatbook](https://bevy-cheatbook.github.io/gpu/intro.html). Covers huge swaths of bevy. The rendering discussion of it is a pretty nice intro and has some useful graphics. It's generally out of date, but a lot of it still applies.
 
 #### Vertex Buffers
 
